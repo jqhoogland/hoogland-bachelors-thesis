@@ -1,0 +1,653 @@
+%
+% Choose how your presentation looks.
+\documentclass{beamer}
+
+% For more themes, color themes and font themes, see:
+% http://deic.uab.es/~iblanes/beamer_gallery/index_by_theme.html
+%
+\mode<presentation>
+{
+  \usetheme{default}      % or try Darmstadt, Madrid, Warsaw, ...
+  \usecolortheme{default} % or try albatross, beaver, crane, ...
+  \usefonttheme{default}  % or try serif, structurebold, ...
+  \setbeamertemplate{navigation symbols}{}
+  \setbeamertemplate{caption}[numbered]
+}
+
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{subcaption}
+\usepackage{mathtools}
+\usepackage{nicefrac} % compact symbols for 1/2, etc.
+\usepackage{microtype} % microtypography
+\usepackage{lipsum}
+\usepackage{physics}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{cancel}
+
+
+\newcommand{\mc}[1]{\mathcal{#1}}
+\newcommand{\bolds}[1]{\boldsymbol{#1}}
+% \DeclarePairedDelimiter\abs{\lvert}{\rvert}%
+
+%1 Exectation value
+\newcommand{\expect}[1]{\langle{}{#1}\rangle{}}
+
+% Collections of samples
+\newcommand{\mcH}{\mathcal{H}}
+\newcommand{\mcE}{\mathcal{E}}
+\newcommand{\mcB}{\mathcal{B}}
+\newcommand{\mcV}{\mathcal{V}}
+\newcommand{\mcX}{\mathcal{X}}
+\newcommand{\mcY}{\mathcal{Y}}
+\newcommand{\mcC}{\mathcal{C}}
+\newcommand{\mcS}{\mathcal{S}}
+\newcommand{\mcL}{\mathcal{L}}
+\newcommand{\mcR}{\mathcal{R}}
+
+
+% Microstates (bold lowercase)
+\newcommand{\bh}{\bolds{h}}
+\newcommand{\be}{\bolds{e}}
+\newcommand{\bb}{\bolds{b}}
+\newcommand{\bv}{\bolds{v}}
+\newcommand{\bx}{\bolds{x}}
+\newcommand{\by}{\bolds{y}}
+\newcommand{\bs}{\bolds{s}}
+\newcommand{\bo}{\bolds{o}}
+\newcommand{\br}{\bolds{r}}
+
+% Microstates (bold lowercase)
+\newcommand{\bH}{\bolds{H}}
+\newcommand{\bE}{\bolds{E}}
+\newcommand{\bB}{\bolds{B}}
+\newcommand{\bV}{\bolds{V}}
+\newcommand{\bX}{\bolds{X}}
+\newcommand{\bY}{\bolds{Y}}
+\newcommand{\bS}{\bolds{S}}
+\newcommand{\bT}{\bolds{T}}
+
+% microstates explicit (bold lowercase)
+\newcommand{\seth}{\{h_j\}}
+\newcommand{\sete}{\{e\}}
+\newcommand{\setb}{\{b\}}
+\newcommand{\setv}{\{v_i\}}
+\newcommand{\setx}{\{x_i\}}
+\newcommand{\sety}{\{y_j\}}
+\newcommand{\sets}{\{s_i\}}
+\newcommand{\setr}{\{r_j\}}
+
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator{\sgn}{sgn}
+
+% Greek letters
+\renewcommand{\l}{\lambda}
+\renewcommand{\b}{\beta}
+\renewcommand{\L}{\Lambda}
+\renewcommand{\k}{\kappa}
+\newcommand{\T}{\Theta}
+\renewcommand{\P}{\Psi}
+
+
+\title[RBMs and RG\@: Learning Relevant Information]{Restricted Boltzmann Machines and the Renormalization Group: Learning Relevant Information in Statistical Physics}
+
+\author{Jesse Hoogland}
+\institute{Amsterdam University College}
+
+\date{05-06-2019}
+
+% BEGIN DOCUMENT
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\section{Introduction}
+\begin{frame}{Introduction}
+  This talk will revolve around the intersection of: {\Large
+    \begin{itemize}
+    \item The Renormalization Group (RG) of Statistical Physics
+    \item Deep Neural Networks (DNNs) in Machine Learning
+    \item Information and Probability Theory
+    \end{itemize}
+  }
+\end{frame}
+
+\begin{frame}{Introduction}
+    \begin{itemize}
+    \item We derive a more \textit{exact} correspondence between RG and
+      RBMs than previous works.
+    \item We provide a new implementation of an existing algorithm that learns
+      \textit{optimal} RG transformations and calculate the Ising model's correlation length critical exponent.
+    \item We describe a generalization of this algorithm to
+      \textit{arbitrary} lattice systems.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Outline}
+
+    {\small
+      \tableofcontents
+      }
+\end{frame}
+
+% Let us start at the beginning, with the origins of statistical
+% physics Thermodynamics -> SP Need for explanation of heat:
+% continuous wave-like or discrete and atomic The latter Controversial
+% - need to defend theories with experimental predictions GOAL:
+% TRANSLATING MICRO TO MACRO
+
+\begin{frame}{Introduction to Statistical Physics}
+  \begin{figure}[h!]
+    \centering
+    \begin{subfigure}[b]{0.25\linewidth}
+      \includegraphics[width=\linewidth]{figures/boltzmann.jpeg}
+      \caption{Ludwig Boltzmann~\cite{boltzmann}}
+    \end{subfigure}%
+    \quad
+    \begin{subfigure}[b]{0.25\linewidth}
+      \includegraphics[width=\linewidth]{figures/maxwell.jpeg}
+      \caption{James Clerk Maxwell~\cite{maxwell}}
+    \end{subfigure}%
+    \quad
+    \begin{subfigure}[b]{0.25\linewidth}
+      \includegraphics[width=\linewidth]{figures/clausius.jpeg}
+      \caption{Rudolf Clausius~\cite{clausius}}
+    \end{subfigure}
+    \label{fig:the-greats}
+  \end{figure}
+\end{frame}
+
+% Anchor our investigation in one specific example: FERROMAGNETISM Our
+% goal will be to predict properties of these magnets.  PIVOT: what
+% kinds of predictions can we make?
+\section{Statistical Physics}
+\begin{frame}{The Boltzmann Distribution}
+  \begin{equation*}%
+    \boxed{P(\bs)\:=\frac{1}{Z}e^{-\b E(\bs)}\quad Z\:=\sum_{\bs} e^{-\b E(\bs)}\quad \b = \frac{1}{kT}}
+  \end{equation*}%
+\end{frame}
+
+\subsection{Ferromagnetism and the Ising Model}
+\begin{frame}{Ferromagnetism}
+  \begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\linewidth]{figures/magnet.jpg}
+    \caption{Ferromagnetism, the process by which materials like iron
+      form permanent magnets~\cite{magnet}.}
+  \end{figure}
+\end{frame}
+
+% Specifically, if we control the temperature and an external field,
+% What will we MEASURE: - Magnetization, Susceptibility, Specific
+% heat, etc.  We have to be a bit more precise with what we mean by
+% MEASUREMENT MICROSTATE - how the atoms are configured and vibrating
+% etc.  In square cm of air - million million million molecules No way
+% to measure the microstate exactly (QM and Practical, data limits,
+% etc) System is updating rapidly What we end up measure FUNDAMENTAL
+% ASSUMPTION OF SM Clever reasaoning we can get to the boltzmann
+% distribution For systems that exchange only energy to their
+% surroundings, Probability is related to energy. More energy = less
+% likely FUNDAMENTAL PROBLEM OF SM: Intractable Z. However Z also very
+% useful.  PIVOT: Returning to our magnet, let's try an devise a suile
+% energy model.  It turns out, the simplest we can do is the Ising
+% model.
+
+% PIVOT: To solve for probabilities and expectation vlaues we need
+% energies
+\begin{frame}{The Ising Model}
+  \begin{equation*}%
+    \bs =       \begin{pmatrix}
+      s_1\\
+      s_2\\
+      \vdots\\
+      s_N
+    \end{pmatrix}\quad s_i\in\{-1,1\}
+  \end{equation*}%
+
+  \begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/ising.png}
+    \caption{The Ising model~\cite{ising}.\label{fig:ising} }
+  \end{figure}
+
+\end{frame}
+
+% You can actually solve the Boltzmann distribution for this energy
+% function in 1 and 2 dimensions 3 - proven to be NP-Hard PIVOT:
+% Instead of solving these exactly, we'll consider approximate methods
+% More representative of real-life investigations
+
+\begin{frame}{The Ising Hamiltonian}
+  \begin{equation*}%
+    \boxed{P(\bs)\:=\frac{1}{Z}e^{-\b E(\bs)}\quad Z\:=\sum_{\bs} e^{-\b E(\bs)}}\label{eq:boltzmann-distribution}
+  \end{equation*}%
+
+  \begin{equation*}
+    \boxed{E(\bs)\:= -B \sum_i s_i-J \sum_{\langle i,\, j\rangle} s_i s_j}
+    \label{eq:ising-energy}
+  \end{equation*}%
+
+  \begin{enumerate}
+  \item $B$: The external magnetic field.
+  \item $J$: The interaction strength between neighboring spins.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Markov-Chain Monte Carlo (MCMC) Methods}
+  \begin{itemize}
+  \item Perform ensemble average over a subset of (representative)
+    samples.
+  \item Relative probabilities are easier to evaluate than absolute
+    probabilities.
+  \end{itemize}
+
+   \begin{equation*}%
+     \boxed{P(\bs)\:=\frac{1}{Z}e^{-\b E(\bs)}\quad Z\:=\sum_{\bs} e^{-\b E(\bs)}}
+   \end{equation*}%
+
+\begin{figure}[ht]
+  \centering \includegraphics[width=0.75\textwidth]{figures/samples.png}
+\end{figure}
+
+\end{frame}
+
+\subsection{Critical Phenomena}
+\begin{frame}{Mean-Field Theory (MFT)}
+  \begin{itemize}
+  \item Approximates the value at each spin by an average over its
+    neighbors.
+  \item Yields interesting predictions about
+    \textit{critical behavior}.
+  \end{itemize}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=.5\textwidth]{figures/correlation-length.png}
+  \caption{MFT predicts a \textit{critical point}, below which the
+    system \textit{spontaneously magnetizes}. At the critical point,
+    MFT predicts a divergence of the correlation length.}
+\end{figure}
+\end{frame}
+
+% PIVOT: However, these are WRONG
+\begin{frame}{Mean-Field Theory Critical Exponents}
+  Defining $t$ is the \textit{reduced temperature}: $t:=(T-T_c)/T_c$,
+  MFT predicts:
+  \begin{equation*}%
+    \boxed{\expect{M}\rvert_{B=0}\sim\abs{t}^{-1/2}}
+  \end{equation*}%
+  \begin{equation*}%
+\boxed{\xi\sim\abs{t}^{-1/2}}
+  \end{equation*}%
+\end{frame}
+
+% PIVOT: we need something else to make quantitative predictions
+\begin{frame}{Mean-Field Theory Critical Exponents}
+  Defining $t$ is the \textit{reduced temperature}: $t:=(T-T_c)/T_c$,
+  MFT predicts:
+  \begin{equation*}%
+    \boxed{\expect{M}\rvert_{B=0}\ \xcancel{\sim}\ \abs{t}^{-1/2}}
+  \end{equation*}%
+  \begin{equation*}%
+\boxed{\xi\ \xcancel{\sim}\ \abs{t}^{-1/2}}
+  \end{equation*}%
+\end{frame}
+
+\subsection{The Renormalization Group}
+\begin{frame}{The Renormalization Group}
+  Instead of computing $Z=\sum_{\bs}e^{-\b E(\bs)}$ explicitly, try to
+  reexpress $Z$ in a simpler form. We follow Cardy's derivations~\cite{cardy}.
+  \begin{equation*}%
+    \boxed{\sum_{\bs'}e^{-H'(\bs')}=\sum_{\bs}e^{-H(\bs)}}
+  \end{equation*}%
+
+  For example, \textit{decimation}:
+  \begin{equation*}%
+    e^{-H'(\bs')}=\sum_{s_2,s_4,\ldots,s_N} e^{-H(\bs)},
+  \end{equation*}%
+\end{frame}
+
+% We can do this for any one microstate easily, but as we saw from (go
+% back), we need to perform this sum for ALL microstates. STILL
+% INTRACTABLE PIVOT:
+
+\begin{frame}{Majority-Rule Block-Spin Renormalization}
+  \begin{figure}[ht]
+    \centering
+    \includegraphics[width=.8\textwidth]{figures/block-rg.png}
+    \caption{Three steps of majority-rule block-spin renormalization,
+      preceding left to right (block size $b=2$).\label{fig:block-rg}}
+  \end{figure}%
+  \begin{enumerate}
+  \item Divide configuration into $j$ (3x3) ``blocks,''
+    $\bv^{(j)}=(v_1^{(j)},\cdot, v_9^{(j)})$).
+  \item For each block, create a new \textit{coarse-grained} spin
+    $h_j$, according to the \textit{majority-rule}:
+    \begin{equation*}%
+      \boxed{h_j=\sgn \sum_{i=1}^9 v_i}
+    \end{equation*}%
+  \item Rescale our coarse-grained configuration to the original size.
+  \end{enumerate}
+
+\end{frame}
+
+% TURNS OUT THIS IS NOT ENTIRELY ACCURATE
+
+\begin{frame}{General Theory of RG}
+  Suppose $J' = \mathcal{R}(J)$, then a critical point is such that
+  $J^* =\mathcal{R}(J^*)$.  In its vicinity:
+  \begin{equation*}
+    J'\approx \mathcal{R}(J^*)+ \mathcal{R}'(J^*)(J-J^*) = J^* + b^y(J-J^*),
+  \end{equation*}
+  where $b$ is the block size and
+  \begin{equation*}
+    y \equiv \frac{\ln{\mathcal{R}'(J^*)}}{\ln{b}}.
+  \end{equation*}
+
+  Knowing that
+  \begin{equation*}
+    \xi(J) \sim A (J-J^*)^{-\nu},
+  \end{equation*}
+  we determine:
+  \begin{equation*}%
+    \boxed{\nu=\frac{1}{y}}
+  \end{equation*}%
+\end{frame}
+
+\begin{frame}{Relevant Operators}
+  \begin{equation*}%
+    \boxed{y\rightarrow \{y_i\}}
+  \end{equation*}%
+  \begin{itemize}
+  \item $y_i > 0$: \textbf{relevant}, repeated RG iterations bring us
+    away from fixed point value.
+  \item $y_i < 0$: \textbf{irrelevant}, repeated RG iterations bring
+    us closer to fixed point value.
+  \item $y_i = 0$: \textbf{marginal}, linearized equations do not
+    provide enough information.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{The Consequences and Implementation of RG}
+  Consequences:
+  \begin{itemize}
+  \item \textit{RG-flow}: Critical exponents are expressed as
+    derivatives of RG transformations.
+  \item \textit{Scaling relations}: we can express critical exponents
+    in terms of one another.
+  \item \textit{Universality}: there are finitely many fixed points,
+    and many microscopic theories are indistinguishable
+    macroscopically.
+  \end{itemize}
+  In practice:
+  \begin{itemize}
+  \item $4-\epsilon$ expansion.
+  \item MCMC methods and finite-size scaling.
+  \item Kadanoff's mnethod
+    $e^{-H'(\bs')}=\sum_{\bs} e^{\bT_\l(\bs',\bs)-H(\bs)}$.
+  \end{itemize}
+
+\end{frame}
+
+\section{Machine Learning}
+\begin{frame}{Partition Functions or Probability Distributions}
+  \textbf{Statistical Physics}
+  \begin{align}%
+    H(\bs)\rightarrow Z &\rightarrow \mcS\\
+    \frac{P(\bs)}{P(\bs')}&\rightarrow \mcS_{data}
+  \end{align}%
+
+  \textbf{Machine Learning}
+  \begin{align}%
+    \mcS&\rightarrow P(\bs)\\
+    \mcS_{data}&\rightarrow P_{\theta}(\bs)
+  \end{align}%
+
+\end{frame}
+
+\subsection{Neural Networks and Restricted Boltzmann Machines}
+\begin{frame}{Feed-Forward Neural Networks}
+  \begin{figure}[ht]
+    \centering \includegraphics[width=0.7\linewidth]{figures/ffnn.png}
+    \caption{A neural network consists of alternating linear and
+      non-linear transformations~\cite{mehta-review}.}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{Restricted Boltzmann Machines (RBMs)}
+  \begin{figure}[ht]
+    \centering \includegraphics[width=0.7\linewidth]{figures/rbm.png}
+    \caption{RBMs are a bidirectional neural network of binary-valued
+      units~\cite{rbm-1}.}
+  \end{figure}
+  \begin{equation*}%
+    \boxed{E_\theta(\bv, \bh):=-\sum_i a_iv_i -\sum_j b_jh_j-\sum_{ij} w_{ij}v_ih_j \label{eq:rbm-energy-fn}}
+  \end{equation*}
+  \begin{equation*}%
+    \boxed{P_\theta(\bv,\bh):=\frac{1}{Z}e^{-E_\theta(\bv,\bh)}\quad
+      Z:=\sum_{\bv',\bh'}e^{E_\theta(\bv', \bh')}\label{eq:rbm-joint-dist}}
+  \end{equation*}%
+\end{frame}
+
+% Order parameter
+\subsection{Phase Classification and Gibbs Sampling}
+\begin{frame}{Phase Classifier}
+  \begin{equation*}
+    \boxed{P_\theta(\bh|\bv)=\prod_{j=1}^M \frac{1}{1+e^{-h_j(\sum_i w_{ij} v_i +b_j )}}
+    }\label{eq:v-to-h}
+  \end{equation*}%
+  \begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/classifier.png}
+    \caption{We can use $P_\theta(\bh\rvert\bv)$ as a phase
+      classifer.}
+  \end{figure}
+
+
+\end{frame}
+
+% COND PROBS instead of ABS PROBS
+\begin{frame}{Gibbs Sampling}
+  \begin{equation*}%
+    \boxed{P(\bv)=\sum_{\bh}P(\bv,\bh)}
+  \end{equation*}%
+
+  \begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\linewidth]{figures/gibbs_steps.png}
+    \caption{RBMs can implement a MCMC sampling technique known as
+      \textit{Gibbs sampling}~\cite{gibbs-sampling}.}
+  \end{figure}
+
+\end{frame}
+
+% Note qualitative similarities
+\section{RG = RBM?}
+\begin{frame}{RG = RBM?}
+  \begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/rg-rbm.png}
+    \caption{Two iterations of block renormalization and a deep
+      Boltzmann machine of three layers.\label{fig:rbm-rg} }
+  \end{figure}
+\end{frame}
+
+% PIVOT: but this is not very interesting. (few exact transformations, overfitting, etc)
+%
+\subsection{A Correspondence between Kadanoff's Variational RG and
+  Generative RBMs}
+\begin{frame}{An Exact Correspondence between Kadanoff's Variational
+    RG and RBMs}
+  \begin{equation*}
+    \bT_\l(\bv, \bh)=-\bolds{E}_\theta(\bv,\bh)+\bolds{H}(\bv),
+  \end{equation*}
+  \begin{equation*}%
+    P_\theta(x)=P_{\text{true}}(x)\iff Z'_{\text{Kadanoff}}=Z
+  \end{equation*}%
+\end{frame}
+
+\begin{frame}{Do RBMs Learn Block Spin RG?}
+  \begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/mehta.png}
+    \caption{ The receptive fields of hidden units in
+      DBMs~\cite{mehta}}.
+  \end{figure}
+  \begin{quote} Surprisingly, this local block spin structure emerges
+    from the training process, suggesting the [deep neural network] is
+    self-organizing to implement block spin
+    renormalization~\cite{mehta}.
+  \end{quote}
+\end{frame}
+
+\begin{frame}{Do RBMs Learn Block Spin RG?}
+
+
+  {\huge General block spin tranformations are \textbf{NOT} all
+    appropriate RG procedures.  }
+\end{frame}
+
+\begin{frame}{Extra conditions on RG Transformations}
+  \begin{quote}
+    [T]he usefulness (and practicality) of the RG procedure depends on
+    choosing [the transformation] \ldots such that the effective
+    Hamiltonian\ldots remains as short range as possible.~\cite{kjr}
+  \end{quote}
+
+\begin{equation*}%
+  \boxed{\sum_{\bs'}e^{-H'(\bs')}=\sum_{\bs}e^{-H(\bs)}}
+\end{equation*}
+
+\begin{equation*}%
+  H(\bs)=-\sum_i K^{(1)}_{i} s_i - \sum_{\expect{i,j}}K^{(2)}_{ij}s_i s_j-\sum_{\expect{\expect{i,j}}}K^{(3)}_{ij}s_i s_j\ldots
+\end{equation*}%
+
+\end{frame}
+
+\subsection{Misconceptions}
+\begin{frame}{Misconceptions}
+
+
+  {\Large
+    \begin{itemize}
+    \item Locality
+    \item Translation Invariance
+      \item Physically-Relevant Information
+    \end{itemize}
+    }
+
+\end{frame}
+
+
+\begin{frame}{1. Locality}
+  \begin{figure}[ht]
+    \centering \includegraphics[width=0.7\linewidth]{figures/rbm.png}
+    \caption{RBMs are invariant under any permutation of the hidden
+      layer~\cite{rbm-1}}.
+  \end{figure}
+\end{frame}
+
+\begin{frame}{2. Translational Invariance}
+  We should apply the same transformation to each block of spins.
+  Consider the following transformations:
+  \begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.7\linewidth]{figures/translation-invariance.png}
+    \caption{Translation invariance is not respected by compression
+      RBMs, but it is respected by block-spin RG.}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{Convolutional architecture}
+  We can recover these conditions using a convolutional architecture:
+\begin{figure}[]
+  \centering \includegraphics[width=\textwidth]{figures/cnn.png}
+  \caption{LeNet-5, an example of a convolutional neural
+    network used for digit recognition and a seminal
+    architecture~\cite{lecun}.\label{fig:cnn} }
+\end{figure}
+\end{frame}
+
+% PIVOT: Can we formulate a more precise measure for extracting the information
+% we deem relevant, the LONG-DISTANCE INFo?
+\begin{frame}{3. Long-Distance Information}
+  To train compression RBMs, we use the Kullback-Leibler Divergence
+  \begin{equation*}
+    \boxed{D_{KL}(P_{data}(\bx)||P_{\theta}(\bx))\:=\sum_{x\in\mcX_{data}} P_{data}(\bx)\ln\left(\frac{P_{data}(\bx)}{P_{\theta}(\bx)}\right)}
+  \end{equation*}
+\end{frame}
+
+% PIVOT: what choice in signals x and y would correspond to our physical condition of long-distance?
+\section{Relevant Information}
+\begin{frame}{Information Theory and Relevant Information}
+  Relevant information is the information contained in one signal $x$
+  about another $y$. This is quantified with the mutual information:%
+  \begin{equation*}%
+    \boxed{I(\bx; \by)\:=\sum_{\bx,\by}P(\bx,\by)\log\left(\frac{P(\bx,\by)}{P(\bx)P(\by)}\right)}
+  \end{equation*}%
+\end{frame}
+
+\begin{frame}{The Real-Space Mutual Information (RSMI) Maximization Algorithm}
+\begin{figure}[ht]
+  \centering \includegraphics[width=0.5\textwidth]{figures/kjr.png}
+  \caption{We partition the system into a visible block, buffer zone, and environmental area.\cite{kjr}}
+\end{figure}%
+\begin{equation*}%
+  \boxed{I(\bh; \be)=\sum_{\bh,\be}P(\bh,\be)\log\left(\frac{P(\bh,\be)}{P(\bh)P(\be)}\right)}
+\end{equation*}%
+\end{frame}
+\subsection{Calculating the Correlation-Length Critical Exponent}
+\begin{frame}{A Recalculation of the Correlation-Length Critical Exponent}
+\begin{equation*}%
+  \boxed{\nu\approx 0.79 \pm0.39}
+\end{equation*}%
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.5\textwidth]{figures/crit-exponent.png}
+  \caption{Finite-size collapse curve for our implementation of the RSMI algorithm.}
+\end{figure}
+
+\end{frame}
+\subsection{Generalization}
+\begin{frame}{Generalization to $n$-Spin and $O(n)$ Models}
+  \begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/universality-classes.png}
+  \caption{Universality classes for different numbers of dimensions $d$ and spin components $n$~\cite{universality-classes}.}
+\end{figure}
+\end{frame}
+
+% 1) this allowed us to
+\section{Discussion and Conclusions}
+\begin{frame}{Discussion and Conclusions}
+  \begin{itemize}
+  \item Information theory as conceptual framework for comparing ML
+    and RG and devising \textit{optimal} procedures: e.g.\ the RSMI
+    algorithm.
+  \item Symmetries of our systems as restricting allowed RG and ML
+    transformations and enabling understanding of ``black box'' neural
+    networks: e.g.\ convolutional architectures.
+  \item (Unsupervised) Machine learning as guiding the ``physical reasoning
+    process,'' going beyond data analysis alone: e.g.\ calculating
+    critical exponents~\cite{kjr}.
+  \end{itemize}
+\end{frame}
+
+
+\section{References}
+\begin{frame}{References}
+  {\tiny
+
+    \bibliographystyle{unsrt} \bibliography{references}
+    }
+\end{frame}
+
+\end{document}

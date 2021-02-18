@@ -1,0 +1,36 @@
+(TeX-add-style-hook
+ "appendix"
+ (lambda ()
+   (LaTeX-add-labels
+    "sec:measurements-as-averages"
+    "eq:magnetization"
+    "eq:magnetization-expectation"
+    "sec:delta-s-delta-e"
+    "sec:Z-to-macros"
+    "eq:expectation-as-derivative"
+    "eq:magnetization-as-derivative"
+    "sec:finite-size-scaling"
+    "sec:free-energy-scaling"
+    "eq:f-singular-transformation"
+    "eq:u-t"
+    "eq:u-h"
+    "eq:f-repeated-transformations"
+    "eq:n-iterations"
+    "sec:rg-correlation-length"
+    "sec:information-theory"
+    "eq:entropy-info"
+    "sec:cross-entropy"
+    "eq:cross-entropy-info"
+    "sec:kld"
+    "eq:kld-entropies"
+    "sec:marginal"
+    "sec:mehta-equivalence"
+    "eq:kadanoff-exact"
+    "sec:majority-rule-rbm"
+    "sec:rsmi-calc"
+    "eq:rsmi-factor-joint-dist-e-h"
+    "sec:thermometer"
+    "sec:methods"
+    "fig:susceptibility"))
+ :latex)
+

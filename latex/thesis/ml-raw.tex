@@ -1,0 +1,130 @@
+The KLD is not a distance metric as it is not symmetric
+($D_{KL}(P(x)||Q(x))$ is not generally equal to
+$D_{KL}(Q(x)||P(x))$). However, the KLD equals $0$ if and only if the
+distributions are equal
+($P_{true}(x)=P_{\l}(x) \iff D_{KL}(P_{true}(x)||P_{\l}(x)) =0$).
+
+We must choose the parameters so that $P_\theta(x)$ is as close to
+$P_{true}(x)$ as possible. Now, we do not have direct access to
+$P_{true}$. Instead, we have access to the distribution of training
+samples:%
+\begin{equation}%
+  P_{data}(x)=\frac{1}{N}\sum_n^N \delta(x-x^{(n)}).
+\end{equation}%
+In the large-$N$ limit, this will converge to $P_{true}$. In practice,
+then, our aim is to learn $P_{data}$ without overfitting
+\sref{fig:fitting-dist}.  \fref{fig:fitting-dist}.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[draft,width=0.5\textwidth]{figures/placeholder.jpg}
+  \caption{(1) The true distribution, $P_{true}$. (2) The distribution
+    of our data. In the large $N$ limit, this tends to $P_{true}$. (3)
+    The distribution modelled by an RBM\@. A central problem in ML is
+    the so-calledd ``bias-variance'' tradeoff: to balance over- and
+    underfitting.\label{fig:fitting-dist} }
+\end{figure}
+
+% MAKE THIS NEATER WITH {}
+For the full derivation, consult \fref{sec:kld-differentiation}.
+
+
+
+% What's more, we can derive marginal distributions over either
+% layer:%
+% \begin{equation}%
+%   \boxed{
+%     P_\theta(\bv)&=\sum_{\bh} P_\theta(\bv,\bh)&=e^{-\sum_i a_i v_i} -\prod_j \left(1 + e^{-\left(b_j + \sum_{i} v_i w_{ij}\right)}\right)\\
+%     P_\theta(\bh)&=\sum_{\bv} P_\theta(\bv,\bh)&=e^{-\sum_j b_j h_j} -\prod_i \left(1 + e^{-\left(a_i + \sum_{j} h_j w_{ij}\right)}\right).
+%   }
+% \end{equation}%
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[draft,width=0.5\textwidth]{figures/rbm-classifier.png}
+  \caption{Using an RBM to classify phases.\label{fig:rbm-classifier}
+  }
+\end{figure}
+
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[draft,width=0.5\textwidth]{figures/bias-variance-tradeoff.png}
+  \caption{\label{fig:bias-variance-tradeoff} }
+\end{figure}
+
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[draft,width=0.5\textwidth]{figures/placeholder.jpg}
+  \caption{Our labelled data for an RBM learning to classify phases of
+    matter.\label{fig:rbm-classifier-data} }
+\end{figure}
+
+Of course, we would like to extract the global minimum. In practice,
+this is rarely possible, although we can improve by introducing some
+randomness. The ``stochastic'' in SGD refers to computing the values
+of gradients over subsets of training examples. Rather than computing
+the gradient over the entire training set, we compute the gradient
+over a ``minibatch.'' Gradients over different minibatches will vary,
+and this procedure allows our model some non-zero chance of escaping
+poor local minima for better ones.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[draft,width=0.5\textwidth]{figures/placeholder.jpg}
+  \caption{(1) Gradient Descent (evaluated over the entire data
+    set). (2) Stochastic Gradient Descent (evaluated over
+    minibatches). SGD will produce different estimates of the gradient
+    descent, introducing a kind of ``noise'' that allows the system to
+    find better minima of the cost function evaluated over the full
+    dataset.\label{fig:gradient-descent} }
+\end{figure}
+
+
+
+have not yet been able to devise good transformations~\cite{kjr}. . We
+will see in subsequent sections that a better understanding of the
+links between ML and RG may beget a more rigorous understanding of
+what constitutes good RG and ML implementations. This may yet inspire
+novel, improved techniques in both fields.
+
+
+If our only requirement is to preserve $P_{true}$, then, in general,
+we will not learn RG transformations. In the section, we'll consider
+what happens when we try to formulate our task-- of extracting
+physical information-- in more exact terms. This will allow us to
+derive a cost function that does learn general RG transformations for
+any lattice systems.
+
+
+In RG, the direction of manipulation is very clear: we aim to extract
+the long-distance information from data at the microscopic level. In
+ML, the direction is much more fluid, depending on the task under
+consideration. After considering a few representative examples, we
+will see how this generality allows us ultimately to use ML to learn
+RG transformations\marginpar{Bias-variance tradeoff and train vs
+  test}.
+
+
+
+
+
+In ML, what constitutes ``relevant'' information is dependent on the
+aims of the researcher and the details of the data. We can use CNNs to
+solve many different kinds of questions.  We might train a CNN to
+classify pictures of handwritten digits according to the digit they
+display. We might also train a CNN to perform image segmentation,
+separating a picture into constituent parts. For each task, different
+features of the image will be significant.  Much of ML's power, is
+that researchers need not explicitly tell their models what to look
+like. Instead, ML provides a means to implicitly teach what
+constitutes relevant information, and we will come back to this point
+in the next section.
+
+
+RG's aim as extracting long-distance information is often
+implicit. Most ML techniques, on the other hand, work with an explicit
+cost function. This serves the role of deciding what information an
+algorithm will extract, and this is true even in the case of
+punsupervised or self-supervised learning.

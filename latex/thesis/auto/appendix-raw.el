@@ -1,0 +1,37 @@
+(TeX-add-style-hook
+ "appendix-raw"
+ (lambda ()
+   (LaTeX-add-labels
+    "Z-to-macros"
+    "sec:mft-expansion"
+    "sec:ising-1d-exact"
+    "eq:partition-decomposition-1d"
+    "eq:ising-1d-partition-fn"
+    "eq:ising-1d-free-energy"
+    "eq:ising-1d-free-energy-at-fixed-pts"
+    "eq:ising-1d-magnetization"
+    "sec:decimation"
+    "eq:ising-1d-recursion-relation-J"
+    "eq:decimation-f-transformation"
+    "fig:ising-block-couplings"
+    "fig:decimation"
+    "eq:ising-energy-fn-0-field"
+    "eq:decimation-transformation"
+    "eq:ising-1d-recursion-relation-f"
+    "eq:decimation-f-transformation-0"
+    "fig:ising-1d-fixed-points"
+    "eq:ising-1d-rg-free-energy"
+    "sec:decimation-free-energy"
+    "sec:block-rg-generalization"
+    "fig:markov-random-field"
+    "fig:sigmoid.png"
+    "fig:perceptron"
+    "fig:rbm"
+    "sec:rbm-conditional-dist"
+    "sec:kld-differentiation"
+    "sec:regularization"
+    "sec:rsmi-derivation"
+    "fig:ternary-sigmoid.png"
+    "sec:information-theory"))
+ :latex)
+

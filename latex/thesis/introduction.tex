@@ -1,0 +1,119 @@
+\chapter{Introduction}
+
+In the age of \textit{big data}, machine learning (ML), a subset of
+artificial intelligence (AI), has become more than \textit{just}
+another set of data analysis tools~\cite{deep-learning}. For one, ML's
+connections with theoretical physics are multivarious and deeply
+conceptual; the very success of ML may, in part, result from physical
+principles including symmetry, locality, and
+hierarchy~\cite{lin}. Furthermore, ML and theoretical physics share a
+powerful conceptual framework in information
+theory~\cite{tishby}. Beyond data analysis, the intersection of ML and
+physics contains a unique set of ideas that researchers in both fields
+can leverage to solve tough problems.
+
+In particular, recent work has drawn attention to the similarities
+between ML and a class of techniques from statistical physics known as
+the renormalization group (RG)~\cite{mehta,kjr,iso,lin}. Developed in
+the last century, RG has been crucial in making sense of critical
+behavior, those phenomena characterizing phase transitions. In 2014,
+Mehta and Schwab published a seminal paper describing an
+\textit{exact} equivalence between a technique from RG and a type of
+neural network (NN) from ML~\cite{mehta}. This, however, met
+criticism, and it works only under a narrow set of circumstances. The
+similarities between ML and RG, then, are still largely qualitative,
+and this remains an active area of research. Not to mention, the
+research landscape maintains lingering misconceptions about the
+details of the intersection~\cite{iso, lin, mehta-reply, hoeve}. This
+warrants further investigation, and in order to facilitate and
+encourage such research, our first contribution is to provide a
+clarifying overview of the competing views. We resolve a number of
+inaccuracies.
+
+In 2018, Koch-Janusz and Ringel derived an algorithm which uses neural
+networks to learn RG transformations on lattice systems: the
+\textit{real-space mutual information} (RSMI)
+algorithm~\cite{kjr}. Notably, this method is \textit{unsupervised}
+which is particularly relevant for research into poorly understood
+physical systems; information-theoretic approaches, like this
+algorithm, may guide researchers towards the locations of critical
+points and even calculations of critical exponents. Furthermore,
+Koch-Janusz and Ringel's derivation is \textit{optimal} in a rigorous
+sense we define in \fref{sec:rsmi}~\cite{kjr,lenggenhager}. This is
+exciting because many well-established practices in RG lack precise
+justification. More exact formulations, like these, may inspire more
+effective implementations, not to mention a better understanding of
+why these ML and RG techniques work.
+
+In our investigation, we will develop a set of tools for tackling
+critical phenomena. First, we consider some of the standard techniques
+of statistical physics~[\ref{sec:sm}], building towards an ML-derived
+implementation of RG~[\ref{sec:rsmi}].  We, then, introduce elements
+of ML, emphasizing their utility in a variety of statistical physics
+contexts~[\ref{sec:ml}]. We anchor this investigation around the Ising
+model, one of the most important models in statistical physics. To
+compare these various techniques, we evaluate their ability in
+predicting the Ising model's correlation length critical exponent,
+$\nu$.
+
+To accomplish this, we have built and shared an open-source
+implementation of the RSMI algorithm~\cite{rgpy} through
+\textit{rgpy}~[\ref{sec:validation}]. Hereby, we provide a calculation
+for $\nu$~[\ref{sec:validation}].Then, we describe a generalization of
+this algorithm to \textit{arbitrary} lattice systems. This gives rise
+to a family of RSMI-inspired approaches.
+
+It is our aim to enable and inspire researchers to build further on
+our results. We accomplish this by reviewing the current state of
+research, sharing an implementation of the RSMI algorithm, and
+describing avenues of future research. Although we focus on the
+perspective of statistical physicists, this capstone is accessible for
+both ML and physics researchers, even at an undergraduate level.
+
+In \fref{sec:sm}, we begin by introducing techniques native to
+statistical physics. We describe mean-field theory, and its failures
+bring us to the renormalization group. In \fref{sec:ml}, we discuss
+two examples of ML in physical investigations.  First, we use neural
+networks to classify Ising model phases. Then, we use the same neural
+networks to generate new samples of Ising models. These examples serve
+to introduce the basics of ML, assuming no prior knowledge (except
+mathematical maturity), and the same is true for the portion on
+statistical physics. In \fref{sec:comparison}, we explore the
+similarities between ML and RG, and by being explicit in our
+formulation of ``relevant'' information, we manage to avoid some of
+the mistakes of earlier comparisons. In \fref{sec:rsmi}, we explain
+and justify the RSMI algorithm, following the formulation of
+Koch-Janusz and Ringel. In \fref{sec:validation}, we provide our own
+results: a recalculation of $\nu$ and a generalization of this
+technique, paving the way for a new class of RG techniques. In
+\fref{sec:discussion}, we close with a discussion, reflecting on our
+comparisons of ML and statistical physics and emphasizing the
+wide-ranging impacts of these ideas.
+
+\section{Notation}
+To refer to single microscopic elements (e.g., spins in the Ising
+model or pixels in an image), we use lowercase letters with a lower
+index ($x_i$, $y_j$, etc.).  To refer to collections of microscopic
+elements, microstates or images, we use boldface, lowercase letters
+($\bx\eqcolon\setx$, $\by\eqcolon\sety$, etc.).
+
+To refer to collections of microstates, we use uppercase, cursive
+letters, $\mcX\eqcolon\{\bx\}$. We will be interested in performing
+sums and averages over these sets. Rather than introduce an index to
+keep track of each term, we do so implicitly in the sums.  For
+example, given some function $A(\bx)$, the following are equivalent:
+$\sum_{n}A(\bx^{(n)})\equiv\sum_{\bx\in \mcX}A(\bx)\equiv\sum_{\bx}
+A(\bx)$. Most often, we use the last notation.
+
+If we partition our microstates into subsets (as with block
+renormalization), we also use boldface, lowercase letters ($\bv$,
+$\bh$, etc.). To distinguish partitions, we may use an upper index:
+$\bv^{(n)}$.
+
+For partial derivatives, we typically use the shorthand
+$\partial_t\eqcolon\frac{\partial}{\partial t}$.
+
+For Ising models, we will consider systems with binary units
+$\in \{-1,1\}$, following standard convention. For RBMs, we use the
+standard notation of binary units $\in \{0,1\}$. When using RBMs on
+Ising data, then, we map $-1\rightarrow0$.

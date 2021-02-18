@@ -1,0 +1,31 @@
+(TeX-add-style-hook
+ "sm"
+ (lambda ()
+   (LaTeX-add-labels
+    "sec:sm"
+    "eq:expectation-as-average"
+    "eq:prob-ratios"
+    "eq:boltzmann-entropy"
+    "eq:boltzmann-entropy-difference"
+    "eq:boltzmann-energy-difference"
+    "eq:boltzmann-distribution"
+    "fig:ising"
+    "eq:ising-energy"
+    "fig:mcmc"
+    "eq:transcendental"
+    "fig:mft"
+    "eq:mft-magnetization"
+    "tab:macroparameters"
+    "sec:crit-phenomena"
+    "fig:crit-exponents"
+    "eq:mft-correlation-length"
+    "tab:crit-exponents"
+    "eq:rg-transformation-general"
+    "fig:block-rg"
+    "eq:block-rg-transformation"
+    "fig:block-rg-flow"
+    "sec:mc-overview"
+    "sec:kadanoff"
+    "sec:kadanoff-quote"))
+ :latex)
+

@@ -1,0 +1,63 @@
+\chapter{Discussion and Conclusions}\label{sec:discussion}
+Let us summarize what we have accomplished.  We began overviewing the
+basic elements of statistical physics which has the goal of turning
+microscopic theories into concrete macroscopic observables.  One
+quickly runs into a problem: intractable probabilites.  We sampled a
+host of techniques that sidestep this fundamental problem. MCMC
+techniques avoid absolute probabilities with iterations of relative
+probabilities. Mean field theory uses a clever constraint on
+conditional distributions. RG creates new probability distributions,
+iteratively simpler, keeping the relevant long-distance information.
+After an introduction to ML, we noticed a resemblance between neural
+networks and RG\@. We identified a need for a more precise notion of
+``relevant'' information, which one formalizes with information
+theory. At the level of ``relevant'' information, ML and RG appeared
+to behave similarly, extracting relevant information and suppressing
+irrelevant information. However, we saw that RG contained a more
+narrow conception of relevance: long-distance.
+
+We evaluated Mehta and Schwab's seminal comparison of Kadanoff's RG
+and CD-trained RBMs. We identified a flaw in one of their claims: a
+``good'' RG, should uncover compact, short-range hidden
+representations and respect the original system's symmetries, and RBMs
+do not necessarily favor these unless explicitly told to. By being
+more exact in formulating conditions, requiring convolution archictures,
+we derived an exact correspondence between majority-rule
+block-spin renormalization and restricted Boltzmann machines.
+
+Using the information-theoretic formulation of relevance, one can
+derive a system-independent RG criterion that \textit{optimally}
+satisfies the short-distance condition. We implemented these ideas in
+\textit{rgpy}, performing a recalculation of the critical length
+correlation exponent. This library is available to everyone, and we
+will continue developing it into the future. We encourage the reader
+to try this out, and we hope to enable many more calculations of
+critical exponents.  To kickstart this project, we provided an
+overview of possible improvements and generalizations: the next likely
+targets are the XY-model and the spin-1 Ising model.
+
+We place special emphasis on the role physical reasoning played
+throughout our exploration. Though information theory presented us a
+formal notion of relevant information, it was physical reasoning that
+led us to an appropriate RG condition. By explicitly thinking about
+the properties physical systems possess, such as locality and
+translational invariance, we managed to peak deeper into ``black box''
+neural networks than may otherwise have been possible. We quote
+Koch-Janusz and Ringel, ``the internal data representations discovered
+by suitably designed algorithms are not just technical means to an
+end, but instead are a clear reflection of the underlying structure of
+the physical system''~\cite{kjr}. Integrating physical and ML
+perspectives proves a promising basis for a better insight into these
+algorithms.  Not to mention, these techniques are unsupervised, so
+they should translate readily to problems other than the Ising model.
+
+Comparisons and integrations of ML and RG are at an early phase, and
+there remains much to be uncovered. It seems that information theory
+is the appropriate framework with which to lay these links. Within
+physics, a better understanding of this area may guide research into
+new systems (on disordered, glassy systems and quantum field
+theories), though the ramifications extend much
+further~\cite{kjr}. Ultimately, the synthesis of ML, physics, and
+information theory may teach us a thing or two about why these
+techniques work as well as they do. Until then, the links should
+inspire powerful new techniques in both of these disciplines.
